@@ -26,7 +26,7 @@ class Transaction:
         self.entries = []
         self.id = None
 
-    # ── entry ─────────────────────────────
+    # ── builder ─────────────────────────────
 
     def add_entry(self, account_id, debit=0.0, credit=0.0):
         if debit < 0 or credit < 0:
@@ -34,7 +34,7 @@ class Transaction:
 
         self.entries.append(Entry(account_id, debit, credit))
 
-    # ── validating ──────────────────────────────────────
+    # ── validation ──────────────────────────────────────
 
     def validate(self):
         if len(self.entries) < 2:
@@ -54,58 +54,57 @@ class Transaction:
     def save(self):
         self.validate()
 
-        conn = get_connection()
-        cursor = conn.cursor()
+        with get_connection() as conn:
+            cursor = conn.cursor()
 
-        cursor.execute(
-            "INSERT INTO transactions (date, description, partner_id) VALUES (?, ?, ?)",
-            (self.date, self.description, self.partner_id),
-        )
-
-        self.id = cursor.lastrowid
-
-        for e in self.entries:
             cursor.execute(
-                "INSERT INTO entries (transaction_id, account_id, debit, credit) VALUES (?, ?, ?, ?)",
-                (self.id, e.account_id, e.debit, e.credit),
+                "INSERT INTO transactions (date, description, partner_id) VALUES (?, ?, ?)",
+                (self.date, self.description, self.partner_id),
             )
 
-        conn.commit()
-        conn.close()
+            self.id = cursor.lastrowid
+
+            for e in self.entries:
+                cursor.execute(
+                    "INSERT INTO entries (transaction_id, account_id, debit, credit) VALUES (?, ?, ?, ?)",
+                    (self.id, e.account_id, e.debit, e.credit),
+                )
+
+            conn.commit()
 
         return self.id
 
-    # ── from database ─────────────────────────────────
+    # ── load from db ─────────────────────────────────
 
     @staticmethod
     def get(transaction_id):
-        conn = get_connection()
-        cursor = conn.cursor()
+        with get_connection() as conn:
+            cursor = conn.cursor()
 
-        row = cursor.execute(
-            "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
-        ).fetchone()
+            row = cursor.execute(
+                "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
+            ).fetchone()
 
-        if not row:
-            raise TransactionError("Transaction not found")
+            if not row:
+                raise TransactionError("Transaction not found")
 
-        txn = Transaction(row["date"], row["description"], row["partner_id"])
-        txn.id = row["id"]
+            txn = Transaction(row["date"], row["description"], row["partner_id"])
+            txn.id = row["id"]
 
-        entry_rows = cursor.execute(
-            "SELECT * FROM entries WHERE transaction_id = ?", (transaction_id,)
-        ).fetchall()
+            entry_rows = cursor.execute(
+                "SELECT * FROM entries WHERE transaction_id = ?", (transaction_id,)
+            ).fetchall()
 
-        for e in entry_rows:
-            txn.entries.append(Entry(e["account_id"], e["debit"], e["credit"]))
+            for e in entry_rows:
+                txn.entries.append(Entry(e["account_id"], e["debit"], e["credit"]))
 
-        conn.close()
         return txn
 
     # ── display ──────────────────────────────────────────
 
-    def __str__(self):
+    def print(self):
         print(f"Transaction {self.id} | {self.date} | {self.description}")
+
         total_dr = 0
         total_cr = 0
 
