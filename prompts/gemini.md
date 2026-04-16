@@ -164,3 +164,7 @@ ___________
 I have a backend logic for accounting with classes Transaction and ReportService. Help me create a Streamlit main file that uses a sidebar for navigation between 'New Transaction', 'P&L Report', and 'Partner Ledger'. Use st.form for data entry and st.metric for financial reporting
 _______
 In response i got a "skeleton" for my app, then I supplemented the design and functionality using the documentation.
+
+____
+Prompt:
+Help me create a production-ready Dockerfile for a Streamlit application that uses Python 3.12 and SQLite. Include best practices like multi-stage builds or slim images, and explain the necessary flags for Streamlit to run inside a container.
