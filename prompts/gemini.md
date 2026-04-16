@@ -110,3 +110,57 @@ Technical tips for implementation:
 
 Validation: Do not allow the transaction to be saved if the amount is negative or both accounts are not selected.
 ___________________________________________________________________________________________________________________________________________________
+Prompt: Explain the basic logic that I should implement for P&L and Partner Ledger reports in a double-entry accounting system with fixed accounts (1000, 1100, 2000, 4000, 5000).
+______________
+Response:
+
+To build a coherent reporting layer under the given constraints, you should follow the Double-Entry principle where every business event results in at least two balanced entries (Debit and Credit).
+
+1. Profit and Loss (P&L) Logic
+
+The P&L report measures the financial performance of the business over a specific period. It focuses exclusively on Nominal Accounts (Income and Expenses).
+
+Accounts involved: * 4000 (Revenue): Increases with Credit, decreases with Debit.
+
+5000 (Expense): Increases with Debit, decreases with Credit.
+
+Calculation Logic:
+
+Total Revenue = `∑(Credits to 4000)−∑(Debits to 4000)`
+
+Total Expenses = `∑(Debits to 5000)−∑(Credits to 5000)`
+
+Net Profit = Total Revenue−Total Expenses
+
+Implementation Note: Filter your SQL queries by the date field in the transactions table to allow users to generate reports for specific months or years.
+
+2. Partner Ledger Logic
+
+The Partner Ledger tracks outstanding balances (debts) between the business and its partners (Customers or Vendors). It focuses on Balance Sheet Accounts (Receivables and Payables) filtered by a specific partner_id.
+
+Accounts involved: * 1100 (Accounts Receivable): Used for Customers. A positive balance (Debit > Credit) means the customer owes you money.
+
+2000 (Accounts Payable): Used for Vendors. A positive balance (Credit > Debit) means you owe the vendor money.
+
+Calculation Logic per Partner:
+
+Customer Balance (AR) = `∑(Debits to 1100)−∑(Credits to 1100)`
+
+Vendor Balance (AP) = `∑(Credits to 2000)−∑(Debits to 2000)`
+
+Reporting: The view should list all transactions related to a partner and show the "Running Balance" to understand how a specific invoice or payment affected their total debt.
+
+3. Data Integrity Rules
+
+To ensure these reports are accurate, your system must enforce:
+
+The Equilibrium: Every transaction's total Debits must equal total Credits.
+
+Account Constraints: Transactions affecting P&L (4000/5000) must also affect a balance sheet account (like 1000 or 1100) to reflect the movement of value.
+
+Atomicity: Use database transactions (SQL COMMIT/ROLLBACK) so that a transaction and its entries are saved together or not at all.
+
+___________
+I have a backend logic for accounting with classes Transaction and ReportService. Help me create a Streamlit main file that uses a sidebar for navigation between 'New Transaction', 'P&L Report', and 'Partner Ledger'. Use st.form for data entry and st.metric for financial reporting
+_______
+In response i got a "skeleton" for my app, then I supplemented the design and functionality using the documentation.
