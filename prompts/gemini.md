@@ -168,3 +168,35 @@ In response i got a "skeleton" for my app, then I supplemented the design and fu
 ____
 Prompt:
 Help me create a production-ready Dockerfile for a Streamlit application that uses Python 3.12 and SQLite. Include best practices like multi-stage builds or slim images, and explain the necessary flags for Streamlit to run inside a container.
+____
+
+Prompt:
+"I have finished developing a Minimal Accounting Web App using Python, Streamlit, and SQLite.
+
+The app architecture includes:
+
+Data Layer: SQLite with a double-entry schema (transactions and entries tables).
+
+Logic Layer: OOP implementation with Transaction, ProfitLoss, and PartnerLedger classes.
+
+UI Layer: A Streamlit interface with a Sidebar for navigation, using pandas for financial charting and st.metric for KPIs.
+
+The app supports:
+
+Recording three types of business events (Revenue, Client Payments, Expenses).
+
+Dynamic P&L reporting with date filters and cumulative profit charts.
+
+A Partner Ledger to manage client balances and view transaction history.
+
+A custom green-themed UI with responsive data frames.
+
+Help me write a professional README.md. It should include:
+
+A clear 'Quick Start' guide (Docker and Local).
+
+An explanation of technical decisions (why SQLite, why Layered architecture).
+
+A detailed 'How to Use' section explaining the Dashboard, P&L, and Ledger features.
+
+A section on how the Double-Entry logic is maintained (fixed accounts 1000, 1100, 2000, 4000, 5000).
