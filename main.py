@@ -1,16 +1,24 @@
-# This is a sample Python script.
+import streamlit as st
+from logic.reports import ReportService
+from db import get_connection
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+st.sidebar.title("Навігація")
+page = st.sidebar.radio("Оберіть сторінку", ["Транзакції", "P&L Звіт", "Партнери"])
 
+if page == "Партнери":
+    st.header("Книга партнерів")
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+    # Отримуємо список партнерів для випадаючого списку
+    with get_connection() as conn:
+        partners = conn.execute("SELECT id, name FROM partners").fetchall()
 
+    partner_options = {p["name"]: p["id"] for p in partners}
+    selected_name = st.selectbox("Оберіть партнера", list(partner_options.keys()))
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    if selected_name:
+        p_id = partner_options[selected_name]
+        ledger = ReportService.get_partner_ledger(p_id)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+        col1, col2 = st.columns(2)
+        col1.metric("Він винен нам (AR)", f"{ledger.receivable} $")
+        col2.metric("Ми винні йому (AP)", f"{ledger.payable} $")
